@@ -107,7 +107,7 @@ async function searchEpisodes(term, title, subscribed, from, since) {
   if (!res.ok) throw new Error('Apple search HTTP ' + res.status);
   const episodes = episodesFromSearch((await res.json()).results || [], term, subscribed, from, since);
   console.log(`Search "${term}" found ${episodes.length} episodes`);
-  return { id: sha('search:' + term), title, image: '', feed: 'search:' + term, episodes };
+  return { id: sha('search:' + term), title, image: '', feed: 'search:' + term, episodes, ...(since ? { addAll: true } : {}) };
 }
 
 const readJson = async (file, fallback) => {

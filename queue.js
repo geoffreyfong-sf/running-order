@@ -3,7 +3,7 @@
   const NEW_SHOW_EPISODES = 3; // A newly added show brings in only its latest few.
 
   function blankState() {
-    return { rank: [], modes: {}, order: [], seen: {}, played: {}, pos: {}, current: null, speed: 1 };
+    return { rank: [], modes: {}, order: [], seen: {}, played: {}, pos: {}, backfilled: {}, current: null, speed: 1 };
   }
 
   function indexEpisodes(feed) {
@@ -43,11 +43,14 @@
       const isNewShow = !state.rank.includes(show.id);
       if (isNewShow) state.rank.push(show.id);
       const list = [...(show.episodes || [])].sort((a, b) => (a.date || '').localeCompare(b.date || ''));
-      const startFrom = isNewShow ? Math.max(0, list.length - NEW_SHOW_EPISODES) : 0;
+      // Searches with a start date bring in everything since that date, once.
+      const addAll = show.addAll && !state.backfilled[show.id];
+      if (addAll) state.backfilled[show.id] = 1;
+      const startFrom = isNewShow && !addAll ? Math.max(0, list.length - NEW_SHOW_EPISODES) : 0;
       list.forEach((ep, i) => {
-        const fresh = !state.seen[ep.id];
+        const fresh = addAll || !state.seen[ep.id];
         state.seen[ep.id] = 1;
-        if (fresh && i >= startFrom && !state.played[ep.id]) {
+        if (fresh && i >= startFrom && !state.played[ep.id] && !state.order.includes(ep.id)) {
           insertEpisode(state, { ...ep, showId: show.id }, eps);
           added.push(ep.id);
         }
