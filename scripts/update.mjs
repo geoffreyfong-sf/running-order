@@ -73,23 +73,27 @@ async function findFeed(name, by) {
 }
 
 // Turn Apple episode search results into a show of everything naming this person or topic.
-export function episodesFromSearch(results, term, subscribed) {
+export function episodesFromSearch(results, term, subscribed, from) {
   const norm = (x) => String(x || '').toLowerCase().replace(/[^a-z0-9]+/g, ' ').trim();
   const phrase = norm(term);
+  const oneYearAgo = Date.now() - 365 * 864e5;
   const seen = new Set();
   return results
     .filter((r) => r.episodeUrl && !subscribed.has(r.feedUrl))
-    .filter((r) => norm(`${r.trackName} ${r.description} ${r.shortDescription}`).includes(phrase))
+    .filter((r) => (from
+      ? norm(r.collectionName).includes(norm(from))
+      : norm(`${r.trackName} ${r.description} ${r.shortDescription}`).includes(phrase)))
+    .filter((r) => new Date(r.releaseDate).getTime() > oneYearAgo)
     .map((r) => ({
       id: sha(`search|${r.episodeGuid || r.episodeUrl}`),
-      title: `${r.collectionName}: ${r.trackName}`,
+      title: from ? r.trackName : `${r.collectionName}: ${r.trackName}`,
       date: r.releaseDate ? new Date(r.releaseDate).toISOString() : '',
       dur: Math.round((r.trackTimeMillis || 0) / 1000),
       url: r.episodeUrl,
     }))
     .sort((a, b) => b.date.localeCompare(a.date))
     .filter((ep) => {
-      const key = norm(ep.title.slice(ep.title.indexOf(': ') + 2));
+      const key = norm(from ? ep.title : ep.title.slice(ep.title.indexOf(': ') + 2));
       if (seen.has(key)) return false;
       seen.add(key);
       return true;
@@ -97,11 +101,11 @@ export function episodesFromSearch(results, term, subscribed) {
     .slice(0, KEEP);
 }
 
-async function searchEpisodes(term, title, subscribed) {
+async function searchEpisodes(term, title, subscribed, from) {
   const url = 'https://itunes.apple.com/search?media=podcast&entity=podcastEpisode&limit=200&term=' + encodeURIComponent(term);
   const res = await fetch(url, { signal: AbortSignal.timeout(30000) });
   if (!res.ok) throw new Error('Apple search HTTP ' + res.status);
-  const episodes = episodesFromSearch((await res.json()).results || [], term, subscribed);
+  const episodes = episodesFromSearch((await res.json()).results || [], term, subscribed, from);
   console.log(`Search "${term}" found ${episodes.length} episodes`);
   return { id: sha('search:' + term), title, image: '', feed: 'search:' + term, episodes };
 }
@@ -147,7 +151,7 @@ async function main() {
     const title = entry.title || entry.search;
     try {
       await new Promise((r) => setTimeout(r, 4000));
-      shows[i] = await searchEpisodes(entry.search, title, subscribed);
+      shows[i] = await searchEpisodes(entry.search, title, subscribed, entry.from);
     } catch (e) {
       console.error(`Could not search ${entry.search}: ${e.message}`);
       const feed = 'search:' + entry.search;
