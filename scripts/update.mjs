@@ -72,10 +72,6 @@ async function findFeed(name, by) {
   return hit.feedUrl;
 }
 
-const readJson = async (file, fallback) => {
-  try { return JSON.parse(await readFile(file, 'utf8')); } catch { return fallback; }
-};
-
 // Turn Apple episode search results into a show of everything naming this person or topic.
 export function episodesFromSearch(results, term, subscribed) {
   const norm = (x) => String(x || '').toLowerCase().replace(/[^a-z0-9]+/g, ' ').trim();

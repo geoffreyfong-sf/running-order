@@ -5,6 +5,7 @@ on:
   push:
     paths:
       - shows.json
+      - scripts/update.mjs
   workflow_dispatch:
 
 permissions:
