@@ -73,17 +73,17 @@ async function findFeed(name, by) {
 }
 
 // Turn Apple episode search results into a show of everything naming this person or topic.
-export function episodesFromSearch(results, term, subscribed, from) {
+export function episodesFromSearch(results, term, subscribed, from, since) {
   const norm = (x) => String(x || '').toLowerCase().replace(/[^a-z0-9]+/g, ' ').trim();
   const phrase = norm(term);
-  const oneYearAgo = Date.now() - 365 * 864e5;
+  const oldest = since ? new Date(since).getTime() : Date.now() - 365 * 864e5;
   const seen = new Set();
   return results
     .filter((r) => r.episodeUrl && !subscribed.has(r.feedUrl))
     .filter((r) => (from
       ? norm(r.collectionName).includes(norm(from))
       : norm(`${r.trackName} ${r.description} ${r.shortDescription}`).includes(phrase)))
-    .filter((r) => new Date(r.releaseDate).getTime() > oneYearAgo)
+    .filter((r) => new Date(r.releaseDate).getTime() >= oldest)
     .map((r) => ({
       id: sha(`search|${r.episodeGuid || r.episodeUrl}`),
       title: from ? r.trackName : `${r.collectionName}: ${r.trackName}`,
@@ -101,11 +101,11 @@ export function episodesFromSearch(results, term, subscribed, from) {
     .slice(0, KEEP);
 }
 
-async function searchEpisodes(term, title, subscribed, from) {
+async function searchEpisodes(term, title, subscribed, from, since) {
   const url = 'https://itunes.apple.com/search?media=podcast&entity=podcastEpisode&limit=200&term=' + encodeURIComponent(term);
   const res = await fetch(url, { signal: AbortSignal.timeout(30000) });
   if (!res.ok) throw new Error('Apple search HTTP ' + res.status);
-  const episodes = episodesFromSearch((await res.json()).results || [], term, subscribed, from);
+  const episodes = episodesFromSearch((await res.json()).results || [], term, subscribed, from, since);
   console.log(`Search "${term}" found ${episodes.length} episodes`);
   return { id: sha('search:' + term), title, image: '', feed: 'search:' + term, episodes };
 }
@@ -151,7 +151,7 @@ async function main() {
     const title = entry.title || entry.search;
     try {
       await new Promise((r) => setTimeout(r, 4000));
-      shows[i] = await searchEpisodes(entry.search, title, subscribed, entry.from);
+      shows[i] = await searchEpisodes(entry.search, title, subscribed, entry.from, entry.since);
     } catch (e) {
       console.error(`Could not search ${entry.search}: ${e.message}`);
       const feed = 'search:' + entry.search;

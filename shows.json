@@ -35,6 +35,8 @@
     {"search": "Bryan Suits", "title": "Everything with Bryan Suits"},
     {"search": "Alan Dershowitz", "title": "Everything with Alan Dershowitz"},
     {"search": "Victor Davis Hanson", "title": "Everything with Victor Davis Hanson"},
-    {"search": "Andrew Branca", "title": "Everything with Andrew Branca"}
+    {"search": "Andrew Branca", "title": "Everything with Andrew Branca"},
+    {"search": "Nathan Cofnas", "title": "Everything with Nathan Cofnas", "since": "2026-10-01"},
+    {"search": "Evan Barker", "title": "Everything with Evan Barker", "since": "2026-10-01"}
   ]
 }
