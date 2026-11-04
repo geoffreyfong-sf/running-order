@@ -1,0 +1,17 @@
+{
+  "shows": [
+    { "name": "Armstrong & Getty On Demand" },
+    { "name": "2WAY Morning Meeting" },
+    { "name": "The Commentary Magazine Podcast" },
+    { "name": "The Huddle", "by": "Huddle" },
+    { "name": "Tim Pool Daily News" },
+    { "name": "3 Martini Lunch" },
+    { "name": "The Dispatch Podcast" },
+    { "name": "2WAY Tonight with Mark Halperin" },
+    { "name": "The Editors", "by": "National Review" },
+    { "name": "The Megyn Kelly Show" },
+    { "name": "RealClearPolitics Podcast" },
+    { "name": "The Show Presents The P1 Podcast", "by": "ROCK 105.3" },
+    { "name": "The Show Presents Full Show On Demand", "by": "ROCK 105.3" }
+  ]
+}

@@ -1,0 +1,8 @@
+{
+  "name": "running-order",
+  "private": true,
+  "type": "commonjs",
+  "dependencies": {
+    "fast-xml-parser": "4.5.0"
+  }
+}
