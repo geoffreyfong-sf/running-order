@@ -62,6 +62,16 @@ export function pickResult(results, name, by) {
   return pool.find((r) => norm(r.collectionName) === norm(name)) || pool[0] || null;
 }
 
+// Use the show's Apple Podcasts ID when a name search lands on the wrong show.
+async function lookupFeed(id) {
+  const res = await fetch(`https://itunes.apple.com/lookup?entity=podcast&id=${id}`, { signal: AbortSignal.timeout(30000) });
+  if (!res.ok) throw new Error('Apple lookup HTTP ' + res.status);
+  const hit = ((await res.json()).results || []).find((r) => r.feedUrl);
+  if (!hit) throw new Error('No feed for Apple ID ' + id);
+  console.log(`Apple ID ${id} is "${hit.collectionName}" by ${hit.artistName}`);
+  return hit.feedUrl;
+}
+
 async function findFeed(name, by) {
   const url = 'https://itunes.apple.com/search?media=podcast&entity=podcast&limit=25&term=' + encodeURIComponent(name);
   const res = await fetch(url, { signal: AbortSignal.timeout(30000) });
@@ -115,11 +125,11 @@ const readJson = async (file, fallback) => {
 };
 
 async function readShow(entry, found, prior) {
-  const { name, by, match, days, watch, watchLabel } = typeof entry === 'string' ? { name: entry } : entry;
+  const { name, by, match, days, watch, watchLabel, appleId } = typeof entry === 'string' ? { name: entry } : entry;
   const isLink = /^https?:\/\//i.test(name);
   let url = isLink ? name : found[name];
   try {
-    if (!url) url = found[name] = await findFeed(name, by);
+    if (!url) url = found[name] = appleId ? await lookupFeed(appleId) : await findFeed(name, by);
     const res = await fetch(url, {
       headers: { 'User-Agent': 'RunningOrder/1.0 (personal podcast player)' },
       signal: AbortSignal.timeout(30000),
