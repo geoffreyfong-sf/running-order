@@ -5,7 +5,7 @@
     {"name": "The Commentary Magazine Podcast"},
     {"name": "The Huddle", "by": "Huddle"},
     {"name": "Tim Pool Daily News"},
-    {"name": "Timcast IRL"},
+    {"name": "Timcast IRL", "watch": "https://rumble.com/c/TimcastIRL/videos", "watchLabel": "Open on Rumble"},
     {"name": "3 Martini Lunch"},
     {"name": "The Dispatch Podcast"},
     {"name": "2WAY Tonight with Mark Halperin"},

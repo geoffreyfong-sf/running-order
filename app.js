@@ -129,7 +129,16 @@
       }
       main.setAttribute('aria-label', 'Play ' + ep.title);
       main.onclick = () => (on ? toggle() : play(id));
-      li.append(slot, art(show), main,
+      const body = el('div', 'body');
+      body.append(main);
+      if (show && show.watch) {
+        const link = el('a', 'watch', show.watchLabel || 'Open show');
+        link.href = show.watch;
+        link.target = '_blank';
+        link.rel = 'noopener';
+        body.append(link);
+      }
+      li.append(slot, art(show), body,
         iconBtn('icon', 'Mark played: ' + ep.title, 'check', () => done(id)),
         gripFor(ep.title));
       list.append(li);

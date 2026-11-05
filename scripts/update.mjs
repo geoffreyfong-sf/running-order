@@ -115,7 +115,7 @@ const readJson = async (file, fallback) => {
 };
 
 async function readShow(entry, found, prior) {
-  const { name, by, match, days } = typeof entry === 'string' ? { name: entry } : entry;
+  const { name, by, match, days, watch, watchLabel } = typeof entry === 'string' ? { name: entry } : entry;
   const isLink = /^https?:\/\//i.test(name);
   let url = isLink ? name : found[name];
   try {
@@ -125,7 +125,7 @@ async function readShow(entry, found, prior) {
       signal: AbortSignal.timeout(30000),
     });
     if (!res.ok) throw new Error('HTTP ' + res.status);
-    return parseFeed(await res.text(), url, { match, days });
+    return { ...parseFeed(await res.text(), url, { match, days }), ...(watch ? { watch, watchLabel } : {}) };
   } catch (e) {
     console.error(`Could not read ${name}: ${e.message}`);
     const keep = { id: sha(url || name), title: name, image: '', feed: url || name, episodes: [], ...prior[url] };

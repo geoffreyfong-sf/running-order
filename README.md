@@ -8,6 +8,9 @@ Edit `shows.json`. Each line is a show name. Add `"by"` when several shows share
 ## If a show matched the wrong podcast
 Remove its line from `resolved.json` and add a `"by"` value in `shows.json`, or replace the name with its feed link.
 
+## Add a link out
+`"watch": "https://..."` and `"watchLabel": "Open on Rumble"` add a link under each episode of that show.
+
 ## Limit a show or follow a person
 - `"days": ["Fri"]` keeps only that day's episodes, in Pacific time.
 - `"match": "News Quiz"` keeps only episodes with those words in the title.
