@@ -41,6 +41,7 @@
     {"search": "Nathan Cofnas", "title": "Everything with Nathan Cofnas", "since": "2026-10-01"},
     {"search": "Evan Barker", "title": "Everything with Evan Barker", "since": "2026-10-01"},
     {"name": "Straight to The Point With Catherine Herridge", "appleId": 1878378731},
-    {"search": "Catherine Herridge", "title": "Everything with Catherine Herridge"}
+    {"search": "Catherine Herridge", "title": "Everything with Catherine Herridge"},
+    {"search": "Sarah Isgur", "title": "Everything with Sarah Isgur", "except": ["Advisory Opinions"], "since": "2026-05-01"}
   ]
 }
