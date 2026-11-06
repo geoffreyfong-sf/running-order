@@ -43,7 +43,7 @@ h1 { margin:0; font:700 28px/1.1 var(--display); letter-spacing:-.02em; }
 #refreshBtn.busy svg { animation:spin .8s linear infinite; }
 @keyframes spin { to { transform:rotate(360deg); } }
 @media (prefers-reduced-motion: reduce) { #refreshBtn.busy svg { animation:none; } }
-#status { font-size:13px; color:var(--muted); text-align:right; font-variant-numeric:tabular-nums; }
+#status { white-space:pre-line; line-height:1.25; font-size:12px; color:var(--muted); text-align:right; font-variant-numeric:tabular-nums; }
 
 nav { display:flex; gap:20px; padding:0 max(16px,env(safe-area-inset-right,0px)) 0 max(16px,env(safe-area-inset-left,0px)); border-bottom:1px solid var(--line); }
 nav button { padding:10px 0; font-weight:600; font-size:15px; color:var(--muted); border-bottom:2px solid transparent; margin-bottom:-1px; }

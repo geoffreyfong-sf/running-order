@@ -66,7 +66,9 @@
       shows = Object.fromEntries((feed.shows || []).map((s) => [s.id, s]));
       const added = Q.sync(state, feed);
       save();
-      setStatus(added.length && state.seenBefore ? `${added.length} new` : checkedText());
+      const when = new Date().toLocaleTimeString(undefined, { hour: 'numeric', minute: '2-digit' });
+      const result = added.length && state.seenBefore ? `${added.length} new` : 'No new episodes';
+      setStatus(`${result} at ${when}\n${checkedText()}`);
       state.seenBefore = true;
       save();
       render();
@@ -78,7 +80,7 @@
   }
   function checkedText() {
     if (!feed.updated) return '';
-    return 'Updated ' + new Date(feed.updated).toLocaleTimeString(undefined, { hour: 'numeric', minute: '2-digit' });
+    return 'List last changed ' + new Date(feed.updated).toLocaleTimeString(undefined, { hour: 'numeric', minute: '2-digit' });
   }
   function setStatus(t) { $('status').textContent = t; }
 
@@ -401,7 +403,8 @@
     const btn = $('refreshBtn');
     if (btn.classList.contains('busy')) return;
     btn.classList.add('busy');
-    await refresh();
+    setStatus('Checking...');
+    await Promise.all([refresh(), new Promise((r) => setTimeout(r, 700))]);
     btn.classList.remove('busy');
   };
   $('tabQueue').onclick = () => { tab = 'queue'; render(); };

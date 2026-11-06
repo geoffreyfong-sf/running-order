@@ -2,6 +2,13 @@ name: Check for new episodes
 on:
   schedule:
     - cron: '17 * * * *'
+    # Extra morning checks at 6:45, 7:15 and 7:45 Pacific. GitHub uses UTC,
+    # so these cover both standard and daylight time.
+    - cron: '45 13 * * *'
+    - cron: '15 14 * * *'
+    - cron: '45 14 * * *'
+    - cron: '15 15 * * *'
+    - cron: '45 15 * * *'
   push:
     paths:
       - shows.json

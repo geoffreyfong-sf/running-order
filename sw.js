@@ -1,5 +1,5 @@
 // Keeps the app itself loading on a weak connection. Audio always streams.
-const CACHE = 'running-order-4';
+const CACHE = 'running-order-5';
 const SHELL = ['./', 'index.html', 'app.js', 'queue.js', 'manifest.webmanifest', 'icons/icon-180.png', 'icons/icon-512.png'];
 
 self.addEventListener('install', (e) => {
