@@ -78,7 +78,7 @@
   }
   function checkedText() {
     if (!feed.updated) return '';
-    return 'Checked ' + new Date(feed.updated).toLocaleTimeString(undefined, { hour: 'numeric', minute: '2-digit' });
+    return 'Updated ' + new Date(feed.updated).toLocaleTimeString(undefined, { hour: 'numeric', minute: '2-digit' });
   }
   function setStatus(t) { $('status').textContent = t; }
 
@@ -397,6 +397,13 @@
   $('seek').addEventListener('input', () => {
     if (isFinite(audio.duration)) audio.currentTime = ($('seek').value / 1000) * audio.duration;
   });
+  $('refreshBtn').onclick = async () => {
+    const btn = $('refreshBtn');
+    if (btn.classList.contains('busy')) return;
+    btn.classList.add('busy');
+    await refresh();
+    btn.classList.remove('busy');
+  };
   $('tabQueue').onclick = () => { tab = 'queue'; render(); };
   $('tabShows').onclick = () => { tab = 'shows'; render(); };
 
