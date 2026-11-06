@@ -67,8 +67,8 @@
       const added = Q.sync(state, feed);
       save();
       const when = new Date().toLocaleTimeString(undefined, { hour: 'numeric', minute: '2-digit' });
-      const result = added.length && state.seenBefore ? `${added.length} new` : 'No new episodes';
-      setStatus(`${result} at ${when}\n${checkedText()}`);
+      const result = added.length && state.seenBefore ? `${added.length} new` : 'No new';
+      setStatus(`${result}, ${when}\n${checkedText()}`);
       state.seenBefore = true;
       save();
       render();
@@ -80,7 +80,7 @@
   }
   function checkedText() {
     if (!feed.updated) return '';
-    return 'List last changed ' + new Date(feed.updated).toLocaleTimeString(undefined, { hour: 'numeric', minute: '2-digit' });
+    return 'List changed ' + new Date(feed.updated).toLocaleTimeString(undefined, { hour: 'numeric', minute: '2-digit' });
   }
   function setStatus(t) { $('status').textContent = t; }
 
