@@ -211,6 +211,7 @@
     const ul = el('ul', 'back');
     ul.style.listStyle = 'none';
     ul.style.margin = '0';
+    if (!String(show.feed).startsWith('search:')) ul.append(skipControl(show));
     (show.episodes || []).forEach((ep) => {
       const inQueue = state.order.includes(ep.id);
       const li = el('li', state.played[ep.id] ? 'done' : '');
@@ -229,6 +230,24 @@
       ul.append(li);
     });
     return ul;
+  }
+
+  function skipControl(show) {
+    const li = el('li', 'skip');
+    const secs = state.skip[show.id] || 0;
+    const label = el('span', '', secs ? `Skip intro: ${Q.fmtTime(secs)}` : 'Skip intro: off');
+    const step = (d, text, name) => {
+      const b = el('button', 'stepper', text);
+      b.setAttribute('aria-label', `${name} for ${show.title}`);
+      b.onclick = () => {
+        state.skip[show.id] = Math.min(600, Math.max(0, secs + d));
+        save();
+        render();
+      };
+      return b;
+    };
+    li.append(label, step(-15, '-15s', 'Shorter intro skip'), step(15, '+15s', 'Longer intro skip'));
+    return li;
   }
 
   function resortShow(id) {
@@ -301,12 +320,16 @@
     Q.moveToTop(state, id);
     audio.src = ep.url;
     audio.playbackRate = state.speed;
-    const pos = state.pos[id] || 0;
+    const pos = startAt(id);
     if (pos) audio.addEventListener('loadedmetadata', () => { audio.currentTime = pos; }, { once: true });
     audio.play().catch(() => {});
     save();
     render();
     mediaSession(ep);
+  }
+  // Saved place first; otherwise jump past the show's intro.
+  function startAt(id) {
+    return state.pos[id] || (eps[id] && state.skip[eps[id].showId]) || 0;
   }
   function toggle() {
     if (!audio.src) { if (state.current) { restored = true; play(state.current); } return; }
@@ -335,7 +358,7 @@
     const ep = eps[state.current];
     audio.src = ep.url;
     audio.playbackRate = state.speed;
-    const pos = state.pos[state.current] || 0;
+    const pos = startAt(state.current);
     if (pos) audio.addEventListener('loadedmetadata', () => { audio.currentTime = pos; }, { once: true });
     mediaSession(ep);
     renderPlayer();

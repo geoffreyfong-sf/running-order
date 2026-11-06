@@ -3,7 +3,7 @@
   const NEW_SHOW_EPISODES = 3; // A newly added show brings in only its latest few.
 
   function blankState() {
-    return { rank: [], modes: {}, order: [], seen: {}, played: {}, pos: {}, backfilled: {}, current: null, speed: 1 };
+    return { rank: [], modes: {}, order: [], seen: {}, played: {}, pos: {}, backfilled: {}, skip: {}, current: null, speed: 1 };
   }
 
   function indexEpisodes(feed) {
