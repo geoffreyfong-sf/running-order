@@ -1,5 +1,19 @@
 {
   "shows": [
+    {
+      "id": "all-in-podcast",
+      "title": "All-In with Chamath, Jason, Sacks & Friedberg",
+      "image": "https://images.megaphone.fm/podcast_art/all-in.jpg",
+      "feed": "https://feeds.megaphone.fm/allin",
+      "episodes": []
+    },
+    {
+      "id": "jonathan-turley",
+      "title": "The Resister with Jonathan Turley",
+      "image": "https://images.megaphone.fm/podcast_art/jonathanturley.jpg",
+      "feed": "https://feeds.megaphone.fm/jonathanturley",
+      "episodes": []
+    },
     {"name": "Armstrong & Getty On Demand"},
     {"name": "2WAY Morning Meeting"},
     {"name": "The Commentary Magazine Podcast"},
