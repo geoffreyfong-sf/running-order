@@ -51,9 +51,16 @@
     if (show && show.image) i.src = show.image;
     return i;
   }
+  // "Today", "Yesterday", "Sat" for this week, otherwise "Nov 9".
   function shortDate(d) {
     const t = d ? new Date(d) : null;
-    return t && !isNaN(t) ? t.toLocaleDateString(undefined, { month: 'short', day: 'numeric' }) : '';
+    if (!t || isNaN(t)) return '';
+    const day = (x) => new Date(x.getFullYear(), x.getMonth(), x.getDate()).getTime();
+    const ago = Math.round((day(new Date()) - day(t)) / 864e5);
+    if (ago === 0) return 'Today';
+    if (ago === 1) return 'Yesterday';
+    if (ago > 1 && ago < 7) return t.toLocaleDateString(undefined, { weekday: 'short' });
+    return t.toLocaleDateString(undefined, { month: 'short', day: 'numeric' });
   }
 
   // ---------- Feed ----------
@@ -152,7 +159,10 @@
       const pos = state.pos[id] || 0;
       const dur = ep.dur || 0;
       const timeText = dur ? (pos > 5 ? `${Q.fmtTime(dur - pos)} left` : Q.fmtTime(dur)) : '';
-      main.append(el('span', 'meta', [show && show.title, shortDate(ep.date), timeText].filter(Boolean).join(' · ')));
+      const meta = el('span', 'meta');
+      const when = el('b', 'when', shortDate(ep.date));
+      meta.append(when, [timeText, show && show.title].filter(Boolean).map((x) => ' · ' + x).join(''));
+      main.append(meta);
       if (pos > 5 && dur) {
         const bar = el('span', 'bar');
         const fill = el('i');
