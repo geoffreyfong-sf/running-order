@@ -18,9 +18,12 @@ export function parseDuration(v) {
 
 const dayName = (iso) => new Date(iso).toLocaleDateString('en-US', { weekday: 'short', timeZone: 'America/Los_Angeles' });
 
-// Optional limits on a show: "match" (words or pattern in the title) and "days" (such as ["Fri"]).
-export function keepEpisode(ep, { match, days } = {}) {
+// Optional limits on a show: "match" (words the title must have), "exclude" (words it must not have),
+// "days" (such as ["Mon", "Tue"]) and "minMinutes" (drop shorter clips; episodes with no length are kept).
+export function keepEpisode(ep, { match, exclude, days, minMinutes } = {}) {
   if (match && !new RegExp(match, 'i').test(ep.title)) return false;
+  if (exclude && new RegExp(exclude, 'i').test(ep.title)) return false;
+  if (minMinutes && ep.dur && ep.dur < minMinutes * 60) return false;
   if (days && days.length && !(ep.date && days.includes(dayName(ep.date)))) return false;
   return true;
 }
@@ -141,7 +144,7 @@ const extras = ({ watch, watchLabel, queue, oldest }) => ({
 });
 
 async function readShow(entry, found, prior) {
-  const { name, by, match, days, appleId, oldest } = entry;
+  const { name, by, match, exclude, days, minMinutes, appleId, oldest } = entry;
   const isLink = /^https?:\/\//i.test(name);
   let url = isLink ? name : found[name];
   try {
@@ -151,7 +154,7 @@ async function readShow(entry, found, prior) {
       signal: AbortSignal.timeout(30000),
     });
     if (!res.ok) throw new Error('HTTP ' + res.status);
-    return { ...parseFeed(await res.text(), url, { match, days, oldest }), ...extras(entry) };
+    return { ...parseFeed(await res.text(), url, { match, exclude, days, minMinutes, oldest }), ...extras(entry) };
   } catch (e) {
     console.error(`Could not read ${name}: ${e.message}`);
     const keep = { id: sha(url || name), title: name, image: '', feed: url || name, episodes: [], ...prior[url] };
