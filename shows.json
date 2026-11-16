@@ -59,7 +59,7 @@
     {"name": "Morning Wire", "queue": "Daily Wire"},
     {"name": "Literature and History", "oldest": true, "queue": "Literature"},
     {"name": "The History of Literature", "queue": "Literature"},
-    {"name": "https://feeds.buzzsprout.com/2024786.rss", "oldest": true, "queue": "Literature"},
+    {"name": "https://feed.podbean.com/mcdonough71/feed.xml", "oldest": true, "queue": "Literature"},
     {"name": "Backlisted", "queue": "Literature"},
     {"name": "The Watership Down Podcast", "appleId": 1558964281, "oldest": true, "queue": "Literature"},
     {"name": "The Newsmax Daily", "queue": "Newsmax & Talk"},
