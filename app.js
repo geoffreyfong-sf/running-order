@@ -483,7 +483,7 @@
 
   $('playBtn').onclick = toggle;
   $('backBtn').onclick = () => jump(-15);
-  $('fwdBtn').onclick = () => jump(30);
+  $('fwdBtn').onclick = () => jump(45);
   $('doneBtn').onclick = () => { if (state.current) done(state.current); };
   $('speedBtn').onclick = () => {
     state.speed = SPEEDS[(SPEEDS.indexOf(state.speed) + 1) % SPEEDS.length];
@@ -510,7 +510,7 @@
     ms.setActionHandler('play', () => audio.play());
     ms.setActionHandler('pause', () => audio.pause());
     ms.setActionHandler('seekbackward', () => jump(-15));
-    ms.setActionHandler('seekforward', () => jump(30));
+    ms.setActionHandler('seekforward', () => jump(45));
     ms.setActionHandler('nexttrack', () => { if (state.current) done(state.current); });
   }
 

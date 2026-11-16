@@ -101,12 +101,16 @@ ol { list-style:none; margin:0; padding:0; }
 #nowShow { font-size:12px; color:var(--muted); white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
 #seek { width:100%; margin:8px 0 2px; accent-color:var(--accent); display:block; }
 .times { display:flex; justify-content:space-between; font-size:12px; color:var(--muted); font-variant-numeric:tabular-nums; }
-.controls { display:grid; grid-template-columns:1fr auto auto auto 1fr; align-items:center; justify-items:center; gap:14px; margin-top:4px; }
-.jump { width:52px; height:48px; font:700 15px var(--display); color:var(--ink); }
-#playBtn { width:58px; height:58px; border-radius:50%; background:var(--accent); color:var(--on-accent); display:grid; place-items:center; }
-#playBtn svg { width:26px; height:26px; fill:currentColor; }
-#speedBtn { justify-self:start; font-weight:600; font-size:14px; min-width:48px; min-height:44px; font-variant-numeric:tabular-nums; }
-#doneBtn { justify-self:end; font-weight:600; font-size:14px; color:var(--accent); min-height:44px; }
+.controls { display:flex; align-items:center; justify-content:center; gap:clamp(20px, 8vw, 44px); margin-top:8px; }
+.jump { position:relative; width:72px; height:72px; display:grid; place-items:center; color:var(--ink); border-radius:50%; }
+.jump svg { position:absolute; inset:6px; width:60px; height:60px; fill:none; stroke:currentColor; stroke-width:3; stroke-linecap:round; stroke-linejoin:round; }
+.jump span { font:700 17px var(--display); font-variant-numeric:tabular-nums; padding-top:3px; }
+.jump:active, #playBtn:active { transform:scale(.94); }
+#playBtn { width:88px; height:88px; border-radius:50%; background:var(--accent); color:var(--on-accent); display:grid; place-items:center; flex:none; }
+#playBtn svg { width:40px; height:40px; fill:currentColor; }
+.subcontrols { display:flex; justify-content:space-between; align-items:center; margin-top:4px; }
+#speedBtn { font-weight:600; font-size:15px; min-width:56px; min-height:44px; text-align:left; font-variant-numeric:tabular-nums; }
+#doneBtn { font-weight:600; font-size:15px; color:var(--accent); min-height:44px; }
 </style>
 </head>
 <body>
@@ -123,11 +127,13 @@ ol { list-style:none; margin:0; padding:0; }
     <input id="seek" type="range" min="0" max="1000" value="0" aria-label="Position in episode">
     <div class="times"><span id="elapsed">0:00</span><span id="left">0:00</span></div>
     <div class="controls">
-      <button id="speedBtn" aria-label="Playback speed">1x</button>
-      <button id="backBtn" class="jump" aria-label="Back 15 seconds">-15</button>
+      <button id="backBtn" class="jump" aria-label="Back 15 seconds"><svg viewBox="0 0 48 48"><path d="M10 24a14 14 0 1 0 4.1-9.9"/><path d="M9 8v8h8"/></svg><span>15</span></button>
       <button id="playBtn" aria-label="Play"></button>
-      <button id="fwdBtn" class="jump" aria-label="Forward 30 seconds">+30</button>
-      <button id="doneBtn">Skip</button>
+      <button id="fwdBtn" class="jump" aria-label="Forward 45 seconds"><svg viewBox="0 0 48 48"><path d="M38 24a14 14 0 1 1-4.1-9.9"/><path d="M39 8v8h-8"/></svg><span>45</span></button>
+    </div>
+    <div class="subcontrols">
+      <button id="speedBtn" aria-label="Playback speed">1x</button>
+      <button id="doneBtn">Skip episode</button>
     </div>
   </section>
   <audio id="audio" preload="metadata" playsinline></audio>
