@@ -28,6 +28,21 @@ export function keepEpisode(ep, { match, exclude, days, minMinutes } = {}) {
   return true;
 }
 
+// Label each day's full-length episodes "Hour 1", "Hour 2"... in posting order, and short clips "Bonus".
+export function labelHours(episodes, minMinutes = 20) {
+  const dayOf = (iso) => new Date(iso).toLocaleDateString('en-CA', { timeZone: 'America/Los_Angeles' });
+  const count = {};
+  return [...episodes]
+    .sort((a, b) => a.date.localeCompare(b.date))
+    .map((ep) => {
+      if (!ep.date) return ep;
+      if (ep.dur && ep.dur < minMinutes * 60) return { ...ep, title: `Bonus: ${ep.title}` };
+      const day = dayOf(ep.date);
+      count[day] = (count[day] || 0) + 1;
+      return { ...ep, title: `Hour ${count[day]}: ${ep.title}` };
+    });
+}
+
 export function parseFeed(xml, feedUrl, limits = {}) {
   const channel = parser.parse(xml)?.rss?.channel;
   if (!channel) throw new Error('Not an RSS podcast feed');
@@ -45,7 +60,8 @@ export function parseFeed(xml, feedUrl, limits = {}) {
         url: enclosure['@url'],
       };
     })
-    .filter((ep) => ep && keepEpisode(ep, limits))
+    .filter((ep) => ep && keepEpisode(ep, limits));
+  const labeled = (limits.hours ? labelHours(episodes) : episodes)
     // Story shows keep their first episodes so listening can start at the beginning.
     .sort((a, b) => (limits.oldest ? a.date.localeCompare(b.date) : b.date.localeCompare(a.date)))
     .slice(0, KEEP);
@@ -54,7 +70,7 @@ export function parseFeed(xml, feedUrl, limits = {}) {
     title: text(channel.title) || feedUrl,
     image: images[0]?.['@href'] || text(channel.image?.url),
     feed: feedUrl,
-    episodes,
+    episodes: labeled,
   };
 }
 
@@ -144,7 +160,7 @@ const extras = ({ watch, watchLabel, queue, oldest }) => ({
 });
 
 async function readShow(entry, found, prior) {
-  const { name, by, match, exclude, days, minMinutes, appleId, oldest } = entry;
+  const { name, by, match, exclude, days, minMinutes, hours, appleId, oldest } = entry;
   const isLink = /^https?:\/\//i.test(name);
   let url = isLink ? name : found[name];
   try {
@@ -154,7 +170,7 @@ async function readShow(entry, found, prior) {
       signal: AbortSignal.timeout(30000),
     });
     if (!res.ok) throw new Error('HTTP ' + res.status);
-    return { ...parseFeed(await res.text(), url, { match, exclude, days, minMinutes, oldest }), ...extras(entry) };
+    return { ...parseFeed(await res.text(), url, { match, exclude, days, minMinutes, hours, oldest }), ...extras(entry) };
   } catch (e) {
     console.error(`Could not read ${name}: ${e.message}`);
     const keep = { id: sha(url || name), title: name, image: '', feed: url || name, episodes: [], ...prior[url] };

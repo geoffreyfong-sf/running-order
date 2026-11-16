@@ -22,6 +22,7 @@ Remove its line from `resolved.json` and add a `"by"` value in `shows.json`, or 
 - `"match": "News Quiz"` keeps only episodes with those words in the title.
 - `"exclude": "best of|rerun"` drops episodes with any of those words in the title.
 - `"minMinutes": 60` drops episodes shorter than that.
+- `"hours": true` labels each day's episodes Hour 1, Hour 2 and so on, and short clips Bonus.
 - `{ "search": "Mark Halperin", "title": "Everything with Mark Halperin" }` collects episodes naming that person from any podcast. Add `"since": "2026-10-01"` to set a start date; otherwise it covers the last year. Add `"except": ["Show Name"]` to leave out a show.
 
 Episodes refresh every hour. To refresh now, open Actions, choose "Check for new episodes", and press Run workflow.

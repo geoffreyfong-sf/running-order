@@ -1,6 +1,6 @@
 {
   "shows": [
-    {"name": "Armstrong & Getty On Demand", "days": ["Mon", "Tue", "Wed", "Thu", "Fri"], "exclude": "best of|best weekend"},
+    {"name": "Armstrong & Getty On Demand", "days": ["Mon", "Tue", "Wed", "Thu", "Fri"], "exclude": "best of|best weekend", "hours": true},
     {"name": "2WAY Morning Meeting"},
     {"name": "The Commentary Magazine Podcast"},
     {"name": "The Huddle", "by": "Huddle"},
