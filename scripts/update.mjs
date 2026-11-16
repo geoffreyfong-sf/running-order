@@ -43,7 +43,8 @@ export function parseFeed(xml, feedUrl, limits = {}) {
       };
     })
     .filter((ep) => ep && keepEpisode(ep, limits))
-    .sort((a, b) => b.date.localeCompare(a.date))
+    // Story shows keep their first episodes so listening can start at the beginning.
+    .sort((a, b) => (limits.oldest ? a.date.localeCompare(b.date) : b.date.localeCompare(a.date)))
     .slice(0, KEEP);
   return {
     id: sha(feedUrl),
@@ -125,8 +126,22 @@ const readJson = async (file, fallback) => {
   try { return JSON.parse(await readFile(file, 'utf8')); } catch { return fallback; }
 };
 
+// Accept a plain name, a { name } or { search } entry, or one written as { title, feed }.
+export function normalize(entry) {
+  if (typeof entry === 'string') return { name: entry };
+  if (entry.name || entry.search) return entry;
+  return { ...entry, name: entry.feed || entry.title, title: undefined, feed: undefined };
+}
+
+// Settings carried from shows.json onto the show the app sees.
+const extras = ({ watch, watchLabel, queue, oldest }) => ({
+  ...(watch ? { watch, watchLabel } : {}),
+  ...(queue ? { queue } : {}),
+  ...(oldest ? { serial: true } : {}),
+});
+
 async function readShow(entry, found, prior) {
-  const { name, by, match, days, watch, watchLabel, appleId } = typeof entry === 'string' ? { name: entry } : entry;
+  const { name, by, match, days, appleId, oldest } = entry;
   const isLink = /^https?:\/\//i.test(name);
   let url = isLink ? name : found[name];
   try {
@@ -136,16 +151,16 @@ async function readShow(entry, found, prior) {
       signal: AbortSignal.timeout(30000),
     });
     if (!res.ok) throw new Error('HTTP ' + res.status);
-    return { ...parseFeed(await res.text(), url, { match, days }), ...(watch ? { watch, watchLabel } : {}) };
+    return { ...parseFeed(await res.text(), url, { match, days, oldest }), ...extras(entry) };
   } catch (e) {
     console.error(`Could not read ${name}: ${e.message}`);
     const keep = { id: sha(url || name), title: name, image: '', feed: url || name, episodes: [], ...prior[url] };
-    return { ...keep, error: true };
+    return { ...keep, ...extras(entry), error: true };
   }
 }
 
 async function main() {
-  const { shows: wanted } = await readJson('shows.json', { shows: [] });
+  const wanted = ((await readJson('shows.json', { shows: [] })).shows || []).map(normalize);
   const old = await readJson('feeds.json', { shows: [] });
   const found = await readJson('resolved.json', {}); // Name to feed link, kept so a show stays matched.
   const prior = Object.fromEntries(old.shows.map((s) => [s.feed, s]));
@@ -162,11 +177,11 @@ async function main() {
     const title = entry.title || entry.search;
     try {
       await new Promise((r) => setTimeout(r, 4000));
-      shows[i] = await searchEpisodes(entry.search, title, subscribed, entry.from, entry.since, entry.except);
+      shows[i] = { ...(await searchEpisodes(entry.search, title, subscribed, entry.from, entry.since, entry.except)), ...extras(entry) };
     } catch (e) {
       console.error(`Could not search ${entry.search}: ${e.message}`);
       const feed = 'search:' + entry.search;
-      shows[i] = { id: sha(feed), title, image: '', feed, episodes: [], ...prior[feed], error: true };
+      shows[i] = { id: sha(feed), title, image: '', feed, episodes: [], ...prior[feed], ...extras(entry), error: true };
     }
   }
 

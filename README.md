@@ -8,6 +8,12 @@ Edit `shows.json`. Each line is a show name. Add `"by"` when several shows share
 ## If a show matched the wrong podcast
 Remove its line from `resolved.json` and add a `"by"` value in `shows.json`, or replace the name with its feed link.
 
+## Queues
+`"queue": "History"` puts a show in its own queue. Shows without one go in Main. You can also move a show to another queue in the app.
+
+## Story shows
+`"oldest": true` starts a show at its first episode and keeps the next three queued as you listen.
+
 ## Add a link out
 `"watch": "https://..."` and `"watchLabel": "Open on Rumble"` add a link under each episode of that show.
 

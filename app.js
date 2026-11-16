@@ -84,6 +84,35 @@
   }
   function setStatus(t) { $('status').textContent = t; }
 
+  // ---------- Queues ----------
+  function qOfEp(id) { return eps[id] ? Q.queueOf(state, shows[eps[id].showId]) : 'Main'; }
+  function queueNames() {
+    const names = ['Main'];
+    const addName = (n) => { if (n && !names.includes(n)) names.push(n); };
+    (feed.shows || []).forEach((sh) => addName(Q.queueOf(state, sh)));
+    Object.values(state.showQueue || {}).forEach(addName);
+    return names;
+  }
+  function currentView() {
+    if (!queueNames().includes(state.view)) state.view = 'Main';
+    return state.view;
+  }
+  function queueBar() {
+    const bar = el('div', 'chips');
+    bar.setAttribute('role', 'group');
+    bar.setAttribute('aria-label', 'Queues');
+    const view = currentView();
+    queueNames().forEach((name) => {
+      const count = state.order.filter((id) => eps[id] && qOfEp(id) === name).length;
+      const chip = el('button', 'chip', name);
+      chip.append(el('span', 'count', count));
+      chip.setAttribute('aria-pressed', name === view);
+      chip.onclick = () => { state.view = name; openShow = null; save(); render(); $('view').scrollTop = 0; };
+      bar.append(chip);
+    });
+    return bar;
+  }
+
   // ---------- Views ----------
   function render() {
     $('tabQueue').setAttribute('aria-selected', tab === 'queue');
@@ -95,11 +124,14 @@
   }
 
   function renderQueue(view) {
-    if (!state.order.length) {
+    view.append(queueBar());
+    const name = currentView();
+    const ids = state.order.filter((id) => eps[id] && qOfEp(id) === name);
+    if (!ids.length) {
       const box = el('div', 'empty');
-      box.append(el('strong', '', feed.shows && feed.shows.length ? 'You are caught up' : 'No shows yet'));
+      box.append(el('strong', '', feed.shows && feed.shows.length ? `Nothing left in ${name}` : 'No shows yet'));
       box.append(el('span', '', feed.shows && feed.shows.length
-        ? 'New episodes land here in your ranked order.'
+        ? 'New episodes land here in your ranked order. To add older ones, open Show rank and tap a show.'
         : 'Add show names to shows.json in your GitHub project. They appear here after the next refresh.'));
       view.append(box);
       return;
@@ -107,9 +139,8 @@
     const list = el('ol');
     list.id = 'queue';
     let n = 0;
-    state.order.forEach((id) => {
+    ids.forEach((id) => {
       const ep = eps[id];
-      if (!ep) return;
       const on = id === state.current;
       const li = el('li', 'row' + (on ? ' on' + (audio.paused ? '' : ' playing') : ''));
       li.dataset.id = id;
@@ -146,18 +177,21 @@
       list.append(li);
     });
     view.append(list);
-    sortable(list, (ids) => {
+    sortable(list, (moved) => {
       const cur = state.current;
-      state.order = cur && ids.includes(cur) ? [cur, ...ids.filter((x) => x !== cur)] : ids;
+      const sub = cur && moved.includes(cur) ? [cur, ...moved.filter((x) => x !== cur)] : moved;
+      state.order = Q.reorderSubset(state.order, sub);
       save();
       render();
     });
   }
 
   function renderShows(view) {
+    view.append(queueBar());
+    const name = currentView();
     const list = el('ol');
     list.id = 'ranks';
-    state.rank.filter((id) => shows[id]).forEach((id, i) => {
+    state.rank.filter((id) => shows[id] && Q.queueOf(state, shows[id]) === name).forEach((id, i) => {
       const show = shows[id];
       const li = el('li');
       li.dataset.id = id;
@@ -187,7 +221,7 @@
       box.append(el('strong', '', 'No shows yet'), el('span', '', 'Add show names to shows.json in your GitHub project.'));
       view.append(box);
     } else {
-      const hint = el('p', 'hint', 'Drag shows to rank them. The queue follows, and new episodes land by rank. ');
+      const hint = el('p', 'hint', 'Drag shows to rank them within this queue. Tap a show to move it to another queue. ');
       const m = location.hostname.match(/^([^.]+)\.github\.io$/);
       const repo = location.pathname.split('/').filter(Boolean)[0];
       if (m && repo) {
@@ -200,7 +234,7 @@
       view.append(hint);
     }
     sortable(list, (ids) => {
-      state.rank = [...ids, ...state.rank.filter((x) => !ids.includes(x))];
+      state.rank = Q.reorderSubset(state.rank, ids);
       Q.applyRank(state, feed);
       save();
       render();
@@ -211,6 +245,7 @@
     const ul = el('ul', 'back');
     ul.style.listStyle = 'none';
     ul.style.margin = '0';
+    ul.append(queueControl(show));
     if (!String(show.feed).startsWith('search:')) ul.append(skipControl(show));
     (show.episodes || []).forEach((ep) => {
       const inQueue = state.order.includes(ep.id);
@@ -230,6 +265,38 @@
       ul.append(li);
     });
     return ul;
+  }
+
+  function queueControl(show) {
+    const li = el('li', 'qpick');
+    const id = 'queue-for-' + show.id;
+    const label = el('label', '', 'Queue');
+    label.htmlFor = id;
+    const pick = el('select');
+    pick.id = id;
+    const NEW = '__new__';
+    queueNames().forEach((n) => {
+      const o = el('option', '', n);
+      o.value = n;
+      pick.append(o);
+    });
+    const o = el('option', '', 'New queue...');
+    o.value = NEW;
+    pick.append(o);
+    pick.value = Q.queueOf(state, show);
+    pick.onchange = () => {
+      let target = pick.value;
+      if (target === NEW) {
+        target = (window.prompt('Name the new queue') || '').trim().slice(0, 30);
+        if (!target) { pick.value = Q.queueOf(state, show); return; }
+      }
+      state.showQueue[show.id] = target;
+      state.view = target;
+      save();
+      render();
+    };
+    li.append(label, pick);
+    return li;
   }
 
   function skipControl(show) {
@@ -340,16 +407,19 @@
       state.pos[state.current] = audio.currentTime;
     }
   }
-  function next() {
-    const id = state.order.find((x) => eps[x]);
+  // Keep playing within the same queue.
+  function next(queue) {
+    const id = state.order.find((x) => eps[x] && qOfEp(x) === queue);
     if (id) play(id);
     else { audio.removeAttribute('src'); audio.load(); render(); }
   }
   function done(id) {
     const wasCurrent = id === state.current;
+    const queue = qOfEp(id);
     Q.finish(state, id);
+    Q.topUp(state, feed, eps);
     save();
-    if (wasCurrent) { if (audio.paused) { audio.removeAttribute('src'); audio.load(); render(); } else next(); }
+    if (wasCurrent) { if (audio.paused) { audio.removeAttribute('src'); audio.load(); render(); } else next(queue); }
     else render();
   }
   function restore() {
@@ -403,9 +473,11 @@
   audio.addEventListener('pause', () => { savePos(); save(); render(); });
   audio.addEventListener('ended', () => {
     const id = state.current;
+    const queue = qOfEp(id);
     Q.finish(state, id);
+    Q.topUp(state, feed, eps);
     save();
-    next();
+    next(queue);
   });
   audio.addEventListener('error', () => { if (audio.src) setStatus('Episode could not load'); });
 
