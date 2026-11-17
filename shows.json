@@ -1,4 +1,6 @@
 {
+  "mainOrder": ["2WAY Tonight with Mark Halperin", "2WAY Morning Meeting", "The Commentary Magazine Podcast", "The Huddle", "Armstrong & Getty On Demand", "The Show Presents Full Show On Demand", "The Show Presents The P1 Podcast"],
+  "oldestFirst": ["Armstrong & Getty On Demand"],
   "shows": [
     {"name": "Armstrong & Getty On Demand", "days": ["Mon", "Tue", "Wed", "Thu", "Fri"], "exclude": "best of|best weekend", "hours": true},
     {"name": "2WAY Morning Meeting"},
@@ -8,7 +10,7 @@
     {"name": "Timcast IRL", "watch": "https://rumble.com/c/TimcastIRL/videos", "watchLabel": "Open on Rumble"},
     {"name": "3 Martini Lunch"},
     {"name": "The Dispatch Podcast"},
-    {"name": "2WAY Tonight with Mark Halperin"},
+    {"name": "2WAY Tonight with Mark Halperin", "notes": true},
     {"name": "The Editors", "by": "National Review"},
     {"name": "The Megyn Kelly Show", "days": ["Mon", "Tue", "Wed", "Thu", "Fri"], "minMinutes": 60, "exclude": "second look"},
     {"name": "RealClearPolitics Podcast"},

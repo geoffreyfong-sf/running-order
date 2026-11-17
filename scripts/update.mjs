@@ -8,6 +8,8 @@ const KEEP = 30; // Episodes kept per show.
 const parser = new XMLParser({ ignoreAttributes: false, attributeNamePrefix: '@', trimValues: true, parseTagValue: false, parseAttributeValue: false, htmlEntities: true });
 const sha = (s) => createHash('sha1').update(s).digest('hex').slice(0, 12);
 const text = (v) => (v == null ? '' : typeof v === 'object' ? String(v['#text'] ?? '') : String(v)).trim();
+// Episode description as plain text.
+const plain = (v) => text(v).replace(/<[^>]*>/g, ' ').replace(/&nbsp;/g, ' ').replace(/\s+/g, ' ').trim();
 const list = (v) => (v == null ? [] : Array.isArray(v) ? v : [v]);
 
 export function parseDuration(v) {
@@ -58,6 +60,7 @@ export function parseFeed(xml, feedUrl, limits = {}) {
         date: isNaN(date) ? '' : date.toISOString(),
         dur: parseDuration(item['itunes:duration']),
         url: enclosure['@url'],
+        ...(limits.notes ? { notes: plain(item.description || item['itunes:summary']).slice(0, 800) } : {}),
       };
     })
     .filter((ep) => ep && keepEpisode(ep, limits));
@@ -160,7 +163,7 @@ const extras = ({ watch, watchLabel, queue, oldest }) => ({
 });
 
 async function readShow(entry, found, prior) {
-  const { name, by, match, exclude, days, minMinutes, hours, appleId, oldest } = entry;
+  const { name, by, match, exclude, days, minMinutes, hours, notes, appleId, oldest } = entry;
   const isLink = /^https?:\/\//i.test(name);
   let url = isLink ? name : found[name];
   try {
@@ -170,7 +173,7 @@ async function readShow(entry, found, prior) {
       signal: AbortSignal.timeout(30000),
     });
     if (!res.ok) throw new Error('HTTP ' + res.status);
-    return { ...parseFeed(await res.text(), url, { match, exclude, days, minMinutes, hours, oldest }), ...extras(entry) };
+    return { ...parseFeed(await res.text(), url, { match, exclude, days, minMinutes, hours, notes, oldest }), ...extras(entry) };
   } catch (e) {
     console.error(`Could not read ${name}: ${e.message}`);
     const keep = { id: sha(url || name), title: name, image: '', feed: url || name, episodes: [], ...prior[url] };
@@ -179,7 +182,8 @@ async function readShow(entry, found, prior) {
 }
 
 async function main() {
-  const wanted = ((await readJson('shows.json', { shows: [] })).shows || []).map(normalize);
+  const config = await readJson('shows.json', { shows: [] });
+  const wanted = (config.shows || []).map(normalize);
   const old = await readJson('feeds.json', { shows: [] });
   const found = await readJson('resolved.json', {}); // Name to feed link, kept so a show stays matched.
   const prior = Object.fromEntries(old.shows.map((s) => [s.feed, s]));
@@ -204,8 +208,14 @@ async function main() {
     }
   }
 
-  const same = JSON.stringify(shows) === JSON.stringify(old.shows);
-  const out = { updated: same && old.updated ? old.updated : new Date().toISOString(), shows };
+  // "mainOrder" in shows.json sets your ranking; "oldestFirst" plays those shows oldest first.
+  const idOf = (n) => shows[wanted.findIndex((e) => (e.name || e.search) === n)]?.id;
+  const ids = (config.mainOrder || []).map(idOf).filter(Boolean);
+  const oldIds = (config.oldestFirst || []).map(idOf).filter(Boolean);
+  const order = ids.length ? { version: sha(JSON.stringify([ids, oldIds])), ids, old: oldIds } : undefined;
+
+  const same = JSON.stringify(shows) === JSON.stringify(old.shows) && JSON.stringify(order) === JSON.stringify(old.order);
+  const out = { updated: same && old.updated ? old.updated : new Date().toISOString(), ...(order ? { order } : {}), shows };
   await writeFile('feeds.json', JSON.stringify(out));
   await writeFile('resolved.json', JSON.stringify(found, null, 2));
   console.log(`${shows.length} shows, ${same ? 'no changes' : 'updated'}`);

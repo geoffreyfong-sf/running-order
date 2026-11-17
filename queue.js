@@ -4,7 +4,7 @@
   const SERIAL_AHEAD = 3; // Story shows keep this many upcoming episodes queued.
 
   function blankState() {
-    return { rank: [], modes: {}, order: [], seen: {}, played: {}, pos: {}, backfilled: {}, skip: {}, showQueue: {}, view: 'Main', current: null, speed: 1 };
+    return { rank: [], modes: {}, order: [], seen: {}, played: {}, pos: {}, backfilled: {}, skip: {}, showQueue: {}, view: 'Main', orderVersion: '', current: null, speed: 1 };
   }
 
   function indexEpisodes(feed) {
@@ -64,6 +64,7 @@
       });
     }
     added.push(...topUp(state, feed, eps));
+    applyOrder(state, feed, eps);
     // Drop queue entries that aged out of the feed, except the one playing.
     state.order = state.order.filter((id) => eps[id] || id === state.current);
     return added;
@@ -79,6 +80,23 @@
       .sort((a, b) => a.r - b.r || a.i - b.i)
       .map((x) => x.id);
     state.order = [...playing, ...sorted];
+  }
+
+  // A new ranking from shows.json is applied once; later drags on the phone stay put.
+  function applyOrder(state, feed, eps) {
+    const o = feed.order;
+    if (!o || !o.version || o.version === state.orderVersion) return;
+    const ids = o.ids.filter((id) => state.rank.includes(id));
+    state.rank = [...ids, ...state.rank.filter((x) => !ids.includes(x))];
+    for (const id of o.old || []) state.modes[id] = 'old';
+    applyRank(state, feed);
+    // Shows switched to oldest first: re-sort their queued episodes by date.
+    for (const id of o.old || []) {
+      const mine = state.order.filter((x) => eps[x] && eps[x].showId === id && x !== state.current);
+      const sorted = [...mine].sort((a, b) => (eps[a].date || '').localeCompare(eps[b].date || ''));
+      state.order = reorderSubset(state.order, sorted);
+    }
+    state.orderVersion = o.version;
   }
 
   // Keep the next few unplayed episodes of each story show in the queue, oldest first.

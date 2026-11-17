@@ -8,6 +8,9 @@ Edit `shows.json`. Each line is a show name. Add `"by"` when several shows share
 ## If a show matched the wrong podcast
 Remove its line from `resolved.json` and add a `"by"` value in `shows.json`, or replace the name with its feed link.
 
+## Main order
+`"mainOrder"` lists shows by name in the order to play them. The app applies it once when it changes, so your own drags afterward stay. `"oldestFirst"` plays those shows oldest episode first.
+
 ## Queues
 `"queue": "History"` puts a show in its own queue. Shows without one go in Main. You can also move a show to another queue in the app.
 
