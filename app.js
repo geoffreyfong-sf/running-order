@@ -52,6 +52,12 @@
     return i;
   }
   // "Today", "Yesterday", "Sat" for this week, otherwise "Nov 9".
+  // Minutes only: "37m", "1h 44m".
+  function roughTime(sec) {
+    const m = Math.max(1, Math.round(sec / 60));
+    return m < 60 ? `${m}m` : `${Math.floor(m / 60)}h ${String(m % 60).padStart(2, '0')}m`;
+  }
+
   function shortDate(d) {
     const t = d ? new Date(d) : null;
     if (!t || isNaN(t)) return '';
@@ -158,10 +164,10 @@
       const show = shows[ep.showId];
       const pos = state.pos[id] || 0;
       const dur = ep.dur || 0;
-      const timeText = dur ? (pos > 5 ? `${Q.fmtTime(dur - pos)} left` : Q.fmtTime(dur)) : '';
+      const timeText = dur ? (pos > 5 ? `${roughTime(dur - pos)} left` : roughTime(dur)) : '';
+      // Date, then show name (cut short if needed), then length, which always stays visible.
       const meta = el('span', 'meta');
-      const when = el('b', 'when', shortDate(ep.date));
-      meta.append(when, [timeText, show && show.title].filter(Boolean).map((x) => ' · ' + x).join(''));
+      meta.append(el('b', 'when', shortDate(ep.date)), el('span', 'who', show ? show.title : ''), el('span', 'len', timeText));
       main.append(meta);
       if (pos > 5 && dur) {
         const bar = el('span', 'bar');
