@@ -102,16 +102,17 @@ ol { list-style:none; margin:0; padding:0; }
 #nowShow { font-size:12px; color:var(--muted); white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
 #seek { width:100%; margin:8px 0 2px; accent-color:var(--accent); display:block; }
 .times { display:flex; justify-content:space-between; font-size:12px; color:var(--muted); font-variant-numeric:tabular-nums; }
-.controls { display:flex; align-items:center; justify-content:center; gap:clamp(20px, 8vw, 44px); margin-top:8px; }
-.jump { position:relative; width:72px; height:72px; display:grid; place-items:center; color:var(--ink); border-radius:50%; }
-.jump svg { position:absolute; inset:6px; width:60px; height:60px; fill:none; stroke:currentColor; stroke-width:3; stroke-linecap:round; stroke-linejoin:round; }
+.controls { display:flex; align-items:center; justify-content:center; gap:clamp(10px, 5vw, 32px); margin-top:8px; }
+.jump { position:relative; width:68px; height:68px; flex:none; display:grid; place-items:center; color:var(--ink); border-radius:50%; }
+.jump svg { position:absolute; inset:5px; width:58px; height:58px; fill:none; stroke:currentColor; stroke-width:3; stroke-linecap:round; stroke-linejoin:round; }
 .jump span { font:700 17px var(--display); font-variant-numeric:tabular-nums; padding-top:3px; }
 .jump:active, #playBtn:active { transform:scale(.94); }
-#playBtn { width:88px; height:88px; border-radius:50%; background:var(--accent); color:var(--on-accent); display:grid; place-items:center; flex:none; }
+#playBtn { width:84px; height:84px; border-radius:50%; background:var(--accent); color:var(--on-accent); display:grid; place-items:center; flex:none; }
 #playBtn svg { width:40px; height:40px; fill:currentColor; }
 .subcontrols { display:flex; justify-content:space-between; align-items:center; margin-top:4px; }
 #speedBtn { font-weight:600; font-size:15px; min-width:56px; min-height:44px; text-align:left; font-variant-numeric:tabular-nums; }
-#doneBtn { font-weight:600; font-size:15px; color:var(--accent); min-height:44px; }
+#doneBtn { font-weight:600; font-size:15px; color:var(--accent); min-height:44px; padding:0 4px; border-radius:8px; }
+#doneBtn.armed { background:var(--tally); color:#fff; padding:0 12px; }
 </style>
 </head>
 <body>
@@ -131,6 +132,7 @@ ol { list-style:none; margin:0; padding:0; }
       <button id="backBtn" class="jump" aria-label="Back 15 seconds"><svg viewBox="0 0 48 48"><path d="M10 24a14 14 0 1 0 4.1-9.9"/><path d="M9 8v8h8"/></svg><span>15</span></button>
       <button id="playBtn" aria-label="Play"></button>
       <button id="fwdBtn" class="jump" aria-label="Forward 45 seconds"><svg viewBox="0 0 48 48"><path d="M38 24a14 14 0 1 1-4.1-9.9"/><path d="M39 8v8h-8"/></svg><span>45</span></button>
+      <button id="fwd2Btn" class="jump" aria-label="Forward 2 minutes"><svg viewBox="0 0 48 48"><path d="M38 24a14 14 0 1 1-4.1-9.9"/><path d="M39 8v8h-8"/></svg><span>2m</span></button>
     </div>
     <div class="subcontrols">
       <button id="speedBtn" aria-label="Playback speed">1x</button>

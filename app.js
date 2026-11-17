@@ -494,7 +494,26 @@
   $('playBtn').onclick = toggle;
   $('backBtn').onclick = () => jump(-15);
   $('fwdBtn').onclick = () => jump(45);
-  $('doneBtn').onclick = () => { if (state.current) done(state.current); };
+  $('fwd2Btn').onclick = () => jump(120);
+  // Skip needs a second tap within 3 seconds, so a stray tap does nothing.
+  let skipTimer = null;
+  const disarmSkip = () => {
+    clearTimeout(skipTimer);
+    skipTimer = null;
+    $('doneBtn').classList.remove('armed');
+    $('doneBtn').textContent = 'Skip episode';
+  };
+  $('doneBtn').onclick = () => {
+    if (!state.current) return;
+    if (!skipTimer) {
+      $('doneBtn').classList.add('armed');
+      $('doneBtn').textContent = 'Tap again to skip';
+      skipTimer = setTimeout(disarmSkip, 3000);
+      return;
+    }
+    disarmSkip();
+    done(state.current);
+  };
   $('speedBtn').onclick = () => {
     state.speed = SPEEDS[(SPEEDS.indexOf(state.speed) + 1) % SPEEDS.length];
     audio.playbackRate = state.speed;
