@@ -165,9 +165,11 @@
       const pos = state.pos[id] || 0;
       const dur = ep.dur || 0;
       const timeText = dur ? (pos > 5 ? `${roughTime(dur - pos)} left` : roughTime(dur)) : '';
-      // Date, then show name (cut short if needed), then length, which always stays visible.
+      // Show name on its own line, then date and length.
+      if (show) main.append(el('span', 'who', show.title));
       const meta = el('span', 'meta');
-      meta.append(el('b', 'when', shortDate(ep.date)), el('span', 'who', show ? show.title : ''), el('span', 'len', timeText));
+      meta.append(el('b', 'when', shortDate(ep.date)));
+      if (timeText) meta.append(el('span', 'len', timeText));
       main.append(meta);
       if (pos > 5 && dur) {
         const bar = el('span', 'bar');
