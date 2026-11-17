@@ -88,6 +88,10 @@
     {"name": "Lex Fridman Podcast", "queue": "Science & Ideas"},
     {"name": "Sean Carroll's Mindscape", "queue": "Science & Ideas"},
     {"name": "Hidden Brain", "queue": "Science & Ideas"},
-    {"name": "Making Sense with Sam Harris", "queue": "Science & Ideas"}
+    {"name": "Making Sense with Sam Harris", "queue": "Science & Ideas"},
+    {"search": "Marc Caputo", "title": "EV Marc Caputo", "queue": "2WAY Guests", "since": "2026-11-09"},
+    {"search": "Natalie Allison", "title": "EV Natalie Allison", "queue": "2WAY Guests", "since": "2026-11-09"},
+    {"search": "Kristin Davison", "title": "EV Kristin Davison", "queue": "2WAY Guests", "since": "2026-11-09"},
+    {"search": "Ravi Gupta", "title": "EV Ravi Gupta", "queue": "2WAY Guests", "since": "2026-11-09"}
   ]
 }
