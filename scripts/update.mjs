@@ -221,4 +221,8 @@ async function main() {
   console.log(`${shows.length} shows, ${same ? 'no changes' : 'updated'}`);
 }
 
-if (import.meta.url === `file://${process.argv[1]}`) await main();
+// Pass a folder (such as side-order) to update a second app kept in that folder.
+if (import.meta.url === `file://${process.argv[1]}`) {
+  if (process.argv[2]) process.chdir(process.argv[2]);
+  await main();
+}

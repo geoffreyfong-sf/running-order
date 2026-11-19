@@ -1,0 +1,8 @@
+{
+  "mainOrder": ["The Show Presents The P1 Podcast", "Good Hang with Amy Poehler", "SmartLess"],
+  "shows": [
+    {"name": "The Show Presents The P1 Podcast", "by": "ROCK 105.3"},
+    {"name": "Good Hang with Amy Poehler", "by": "The Ringer"},
+    {"name": "SmartLess"}
+  ]
+}

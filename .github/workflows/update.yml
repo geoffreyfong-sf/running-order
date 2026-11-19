@@ -12,6 +12,7 @@ on:
   push:
     paths:
       - shows.json
+      - side-order/shows.json
       - scripts/update.mjs
   workflow_dispatch:
 
@@ -28,9 +29,10 @@ jobs:
           node-version: 22
       - run: npm install --no-save --no-package-lock
       - run: node scripts/update.mjs
+      - run: node scripts/update.mjs side-order
       - name: Save new episodes
         run: |
           git config user.name "Running Order"
           git config user.email "actions@users.noreply.github.com"
-          git add feeds.json resolved.json
+          git add feeds.json resolved.json side-order/feeds.json side-order/resolved.json
           git diff --cached --quiet || (git commit -m "Update episodes" && git push)

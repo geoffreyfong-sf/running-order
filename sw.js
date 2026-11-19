@@ -1,5 +1,5 @@
 // Keeps the app itself loading on a weak connection. Audio always streams.
-const CACHE = 'running-order-14';
+const CACHE = 'running-order-15';
 const SHELL = ['./', 'index.html', 'app.js', 'queue.js', 'manifest.webmanifest', 'icons/icon-180.png', 'icons/icon-512.png'];
 
 self.addEventListener('install', (e) => {
@@ -8,7 +8,7 @@ self.addEventListener('install', (e) => {
 self.addEventListener('activate', (e) => {
   e.waitUntil(
     caches.keys()
-      .then((keys) => Promise.all(keys.filter((k) => k !== CACHE).map((k) => caches.delete(k))))
+      .then((keys) => Promise.all(keys.filter((k) => k.startsWith('running-order-') && k !== CACHE).map((k) => caches.delete(k))))
       .then(() => self.clients.claim())
   );
 });
