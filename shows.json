@@ -99,7 +99,7 @@
     {"name": "The Woody Show", "queue": "LIKE"},
     {"name": "Free Beer & Hot Wings", "queue": "LIKE"},
     {"name": "Kidd Kraddick Morning Show", "queue": "LIKE"},
-    {"name": "The Jubal Show ON DEMAND", "queue": "LIKE"},
+    {"name": "The Jubal Show ON DEMAND", "match": "Full Jubal Show", "queue": "LIKE"},
     {"name": "Elvis Duran and the Morning Show", "queue": "LIKE"},
     {"name": "The Bobby Bones Show", "queue": "LIKE"},
     {"name": "Mojo In The Morning", "queue": "LIKE"},
