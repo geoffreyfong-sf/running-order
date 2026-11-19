@@ -53,7 +53,12 @@
       // Searches with a start date bring in everything since that date, once.
       const addAll = show.addAll && !state.backfilled[show.id];
       if (addAll) state.backfilled[show.id] = 1;
-      const startFrom = isNewShow && !addAll ? Math.max(0, list.length - NEW_SHOW_EPISODES) : 0;
+      // "startDate" in shows.json starts a new show with everything since that date.
+      const since = show.startDate ? new Date(show.startDate).getTime() : NaN;
+      const fromDate = list.findIndex((ep) => new Date(ep.date).getTime() >= since);
+      const startFrom = !isNewShow || addAll ? 0
+        : !isNaN(since) ? (fromDate === -1 ? list.length : fromDate)
+        : Math.max(0, list.length - NEW_SHOW_EPISODES);
       list.forEach((ep, i) => {
         const fresh = addAll || !state.seen[ep.id];
         state.seen[ep.id] = 1;

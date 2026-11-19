@@ -1,8 +1,8 @@
 {
   "mainOrder": ["The Show Presents The P1 Podcast", "Good Hang with Amy Poehler", "SmartLess"],
   "shows": [
-    {"name": "The Show Presents The P1 Podcast", "by": "ROCK 105.3"},
-    {"name": "Good Hang with Amy Poehler", "by": "The Ringer"},
-    {"name": "SmartLess"}
+    {"name": "The Show Presents The P1 Podcast", "by": "ROCK 105.3", "startDate": "2026-11-16T00:00:00-08:00"},
+    {"name": "Good Hang with Amy Poehler", "by": "The Ringer", "startDate": "2026-11-16T00:00:00-08:00"},
+    {"name": "SmartLess", "startDate": "2026-11-16T00:00:00-08:00"}
   ]
 }

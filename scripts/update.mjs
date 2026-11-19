@@ -156,7 +156,8 @@ export function normalize(entry) {
 }
 
 // Settings carried from shows.json onto the show the app sees.
-const extras = ({ watch, watchLabel, queue, oldest }) => ({
+const extras = ({ watch, watchLabel, queue, oldest, startDate }) => ({
+  ...(startDate ? { startDate } : {}),
   ...(watch ? { watch, watchLabel } : {}),
   ...(queue ? { queue } : {}),
   ...(oldest ? { serial: true } : {}),
