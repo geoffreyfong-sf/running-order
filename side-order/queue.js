@@ -15,6 +15,17 @@
     return map;
   }
 
+  // Calendar day in Pacific time, such as 2026-11-19.
+  function dayOf(ep) {
+    if (!ep || !ep.date) return '';
+    return new Date(ep.date).toLocaleDateString('en-CA', { timeZone: 'America/Los_Angeles' });
+  }
+  // "Newest day first": a later day plays first, and each day plays in hour order.
+  function dayBefore(other, ep) {
+    const a = dayOf(other), b = dayOf(ep);
+    return a > b || (a === b && (other.date || '') < (ep.date || ''));
+  }
+
   function rankOf(state, showId) {
     const i = state.rank.indexOf(showId);
     return i === -1 ? Number.MAX_SAFE_INTEGER : i;
@@ -31,7 +42,8 @@
       const other = eps[state.order[i]];
       if (!other) continue;
       const r = rankOf(state, other.showId);
-      if (r < myRank || (r === myRank && mode === 'old')) at = i + 1;
+      const sameShowFirst = r === myRank && (mode === 'old' || (mode === 'day' && dayBefore(other, ep)));
+      if (r < myRank || sameShowFirst) at = i + 1;
     }
     state.order.splice(at, 0, ep.id);
   }
@@ -70,6 +82,7 @@
     }
     added.push(...topUp(state, feed, eps));
     applyOrder(state, feed, eps);
+    applyDayFirst(state, feed, eps);
     // Drop queue entries that aged out of the feed, except the one playing.
     state.order = state.order.filter((id) => eps[id] || id === state.current);
     return added;
@@ -102,6 +115,19 @@
       state.order = reorderSubset(state.order, sorted);
     }
     state.orderVersion = o.version;
+  }
+
+  // Shows set to "newest day first" in shows.json: switch once, then re-sort their queued episodes.
+  function applyDayFirst(state, feed, eps) {
+    const d = feed.dayFirst;
+    if (!d || !d.version || d.version === state.dayVersion) return;
+    for (const id of d.ids || []) {
+      state.modes[id] = 'day';
+      const mine = state.order.filter((x) => eps[x] && eps[x].showId === id && x !== state.current);
+      const sorted = [...mine].sort((a, b) => (dayBefore(eps[a], eps[b]) ? -1 : dayBefore(eps[b], eps[a]) ? 1 : 0));
+      state.order = reorderSubset(state.order, sorted);
+    }
+    state.dayVersion = d.version;
   }
 
   // Keep the next few unplayed episodes of each story show in the queue, oldest first.
@@ -138,6 +164,20 @@
     state.order = [id, ...state.order.filter((x) => x !== id)];
   }
 
+  // Play next: just under the episode playing now, or first if nothing is playing.
+  function playNext(state, id) {
+    if (id === state.current) return;
+    const rest = state.order.filter((x) => x !== id);
+    const at = state.current && rest[0] === state.current ? 1 : 0;
+    rest.splice(at, 0, id);
+    state.order = rest;
+  }
+
+  function moveToBottom(state, id) {
+    if (id === state.current) return;
+    state.order = [...state.order.filter((x) => x !== id), id];
+  }
+
   function finish(state, id) {
     state.played[id] = 1;
     delete state.pos[id];
@@ -153,7 +193,7 @@
     return h ? `${h}:${String(m).padStart(2, '0')}:${sec}` : `${m}:${sec}`;
   }
 
-  const api = { blankState, indexEpisodes, sync, applyRank, moveToTop, finish, insertEpisode, fmtTime, topUp, queueOf, reorderSubset };
+  const api = { blankState, indexEpisodes, sync, applyRank, moveToTop, playNext, moveToBottom, dayOf, finish, insertEpisode, fmtTime, topUp, queueOf, reorderSubset };
   if (typeof module !== 'undefined') module.exports = api;
   root.Q = api;
 })(typeof window !== 'undefined' ? window : globalThis);

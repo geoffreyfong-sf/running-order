@@ -213,10 +213,15 @@ async function main() {
   const idOf = (n) => shows[wanted.findIndex((e) => (e.name || e.search) === n)]?.id;
   const ids = (config.mainOrder || []).map(idOf).filter(Boolean);
   const oldIds = (config.oldestFirst || []).map(idOf).filter(Boolean);
+  // "newestDayFirst" plays the latest day first, with that day's episodes in hour order.
+  const dayIds = (config.newestDayFirst || []).map(idOf).filter(Boolean);
   const order = ids.length ? { version: sha(JSON.stringify([ids, oldIds])), ids, old: oldIds } : undefined;
+  // Applied once on the phone, separately, so it never resets your show ranking.
+  const dayFirst = dayIds.length ? { version: sha(JSON.stringify(dayIds)), ids: dayIds } : undefined;
 
-  const same = JSON.stringify(shows) === JSON.stringify(old.shows) && JSON.stringify(order) === JSON.stringify(old.order);
-  const out = { updated: same && old.updated ? old.updated : new Date().toISOString(), ...(order ? { order } : {}), shows };
+  const same = JSON.stringify(shows) === JSON.stringify(old.shows) && JSON.stringify(order) === JSON.stringify(old.order)
+    && JSON.stringify(dayFirst) === JSON.stringify(old.dayFirst);
+  const out = { updated: same && old.updated ? old.updated : new Date().toISOString(), ...(order ? { order } : {}), ...(dayFirst ? { dayFirst } : {}), shows };
   await writeFile('feeds.json', JSON.stringify(out));
   await writeFile('resolved.json', JSON.stringify(found, null, 2));
   console.log(`${shows.length} shows, ${same ? 'no changes' : 'updated'}`);

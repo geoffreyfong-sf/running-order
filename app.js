@@ -8,6 +8,8 @@
     play: '<svg viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg>',
     pause: '<svg viewBox="0 0 24 24"><path d="M7 5h4v14H7zM13 5h4v14h-4z"/></svg>',
     check: '<svg viewBox="0 0 24 24"><path d="M5 13l4 4L19 7"/></svg>',
+    up: '<svg viewBox="0 0 24 24"><path d="M12 19V5M5 12l7-7 7 7"/></svg>',
+    down: '<svg viewBox="0 0 24 24"><path d="M12 5v14M5 12l7 7 7-7"/></svg>',
     grip: '<svg viewBox="0 0 24 24"><circle cx="9" cy="6" r="1.7"/><circle cx="15" cy="6" r="1.7"/><circle cx="9" cy="12" r="1.7"/><circle cx="15" cy="12" r="1.7"/><circle cx="9" cy="18" r="1.7"/><circle cx="15" cy="18" r="1.7"/></svg>',
   };
 
@@ -159,6 +161,12 @@
       li.dataset.id = id;
       const slot = el('div', 'slot');
       if (on) slot.append(el('span', 'tally')); else slot.textContent = ++n;
+      if (!on) {
+        slot.classList.add('swipe-start');
+        slot.setAttribute('role', 'button');
+        slot.tabIndex = 0;
+        slot.setAttribute('aria-label', `Move ${ep.title}: play next or send to bottom`);
+      }
       const main = el('button', 'main');
       main.append(el('span', 'title', ep.title));
       const show = shows[ep.showId];
@@ -192,6 +200,14 @@
       li.append(slot, art(show), body,
         iconBtn('icon', 'Mark played: ' + ep.title, 'check', () => done(id)),
         gripFor(ep.title));
+      if (!on) {
+        const acts = el('div', 'swipe-acts');
+        acts.append(
+          iconBtn('swipe-btn', 'Play next: ' + ep.title, 'up', () => { Q.playNext(state, id); save(); render(); }),
+          iconBtn('swipe-btn', 'Send to bottom: ' + ep.title, 'down', () => { Q.moveToBottom(state, id); save(); render(); }));
+        li.append(acts);
+        swipeOpen(li, slot);
+      }
       list.append(li);
     });
     view.append(list);
@@ -220,10 +236,12 @@
       main.append(el('span', 'meta', show.error ? 'Feed could not be read' : `${waiting} in queue`));
       main.setAttribute('aria-expanded', openShow === id);
       main.onclick = () => { openShow = openShow === id ? null : id; render(); };
-      const mode = el('button', 'mode', state.modes[id] === 'old' ? 'Oldest first' : 'Newest first');
+      const MODE_TEXT = { new: 'Newest first', old: 'Oldest first', day: 'Newest day, hours in order' };
+      const mode = el('button', 'mode', MODE_TEXT[state.modes[id] || 'new']);
       mode.setAttribute('aria-label', `${show.title} order: ${mode.textContent}. Tap to change.`);
       mode.onclick = () => {
-        state.modes[id] = state.modes[id] === 'old' ? 'new' : 'old';
+        const cur = state.modes[id] || 'new';
+        state.modes[id] = cur === 'new' ? 'old' : cur === 'old' ? 'day' : 'new';
         resortShow(id);
         save();
         render();
@@ -341,6 +359,36 @@
     mine.sort((a, b) => (eps[a].date || '').localeCompare(eps[b].date || ''));
     mine.forEach((x) => Q.insertEpisode(state, eps[x], eps));
   }
+
+  // ---------- Swipe right from the number to show the play next and bottom arrows ----------
+  function closeSwipes(except) {
+    document.querySelectorAll('.row.swiped').forEach((r) => { if (r !== except) r.classList.remove('swiped'); });
+  }
+  function swipeOpen(li, slot) {
+    let x0 = null, y0 = null, moved = false;
+    slot.addEventListener('pointerdown', (e) => {
+      x0 = e.clientX; y0 = e.clientY; moved = false;
+      try { slot.setPointerCapture(e.pointerId); } catch (err) {}
+    });
+    slot.addEventListener('pointermove', (e) => {
+      if (x0 === null) return;
+      const dx = e.clientX - x0, dy = Math.abs(e.clientY - y0);
+      if (dx > 30 && dx > dy * 1.5) { moved = true; x0 = null; closeSwipes(li); li.classList.add('swiped'); }
+    });
+    const end = () => { x0 = null; };
+    slot.addEventListener('pointerup', end);
+    slot.addEventListener('pointercancel', end);
+    // A tap on the number, or Enter on it, toggles the arrows too.
+    slot.addEventListener('click', () => {
+      if (moved) { moved = false; return; }
+      const open = !li.classList.contains('swiped');
+      closeSwipes(li);
+      li.classList.toggle('swiped', open);
+    });
+    slot.addEventListener('keydown', (e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); slot.click(); } });
+    li.querySelector('.swipe-acts').addEventListener('keydown', (e) => { if (e.key === 'Escape') li.classList.remove('swiped'); });
+  }
+  document.addEventListener('pointerdown', (e) => { if (!e.target.closest('.row.swiped')) closeSwipes(); });
 
   // ---------- Drag to reorder (touch, mouse, and arrow keys) ----------
   function gripFor(name) {
